@@ -34,7 +34,7 @@ class JiKeDownloader(object):
         
     def parseTitle(self,url):
         ret = requests.get(url, headers=self.headers)
-        bf = BeautifulSoup(ret.text, 'lxml')
+        bf = BeautifulSoup(ret.text, features="html.parser")
       
         if not (bf.title.string):
             print("解析title错误，请重试")
@@ -49,8 +49,7 @@ class JiKeDownloader(object):
         url_id = url_parse.path.split('/')[2];
         m3u8_url = "https://app.jike.ruguoapp.com/1.0/mediaMeta/play?type=ORIGINAL_POST&id="+url_id
         ret = requests.get(m3u8_url, headers=self.headers)
-        bf = BeautifulSoup(ret.text, 'lxml')
-        json_url = json.loads(bf.p.string)
+        json_url = json.loads(ret.text)
         
         if not json_url['url']:
             print("解析视频链接错误，请重试")
@@ -58,7 +57,7 @@ class JiKeDownloader(object):
 
         ff = FFmpeg(
             inputs={json_url['url'] : None},
-            outputs={self.title+'.mp4': None}
+            outputs={self.title+'.mp4': '-vcodec copy -acodec copy -absf aac_adtstoasc -y'}
         ) 
 
         ff.run()
